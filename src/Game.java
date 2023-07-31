@@ -68,48 +68,12 @@ public class Game
 			System.out.println(player.hand);
 			System.out.println(player.getId());
 		}
-
 		firtsHand();
 		do {
 			if(turn!=3) {
 				gamePlay(turn);
 			} else {
-				System.out.println("co cua ban: "+playerList.get(3).hand);
-				Domino domino = new Domino();
-				Scanner sc = new Scanner(System.in);
-				System.out.println("Nhap -1 de bo luot: ");
-				int choose = sc.nextInt();
-				if(choose!=-1) {
-					System.out.println("Chon quan so: ");
-					int side = sc.nextInt()-1;
-					System.out.println("left = 0 or right = 1: ");
-					int vec = sc.nextInt();
-					boolean index = playerList.get(3).checkDomino(side);
-					if(index) {
-						domino = playerList.get(3).hand.get(side);
-						if(domino.getSide1()==newBoard.getBotSide() && vec ==1) {
-							newBoard.addDominoBot(domino,true);
-							playerList.get(turn).removeDom(side);
-						}
-						else if(domino.getSide1()==newBoard.getTopSide()) {
-							newBoard.addDominoTop(domino,true);
-							playerList.get(turn).removeDom(side);
-						}
-						else if(domino.getSide2()==newBoard.getBotSide() && vec ==1) {
-							newBoard.addDominoBot(domino,false);
-							playerList.get(turn).removeDom(side);
-						}
-						else if(domino.getSide2()==newBoard.getTopSide()) {
-							newBoard.addDominoTop(domino,false);
-							playerList.get(turn).removeDom(side);
-						} else {
-							gamePlay(turn);
-						}
-					}
-				} else {
-					gamePlay(turn);
-				}
-
+				playerTurn(3);
 			}
 			if(turn==playerList.size()-1) {
 				turn=0;
@@ -130,6 +94,65 @@ public class Game
 			 ) {
 			System.out.println("Diem: "+player.valueOfHand());
 		}
+	}
+
+	public void twoPlayer(){
+
+		packType = iFace.packSize();
+
+		/*Prompt for number of players*/
+		numOfPlayers = iFace.numPlayers();
+
+		for(int i = 1; i <= numOfPlayers; i++) {
+
+			String name = iFace.playerName(); // Ask for the player's name.
+			playerList.add(new Player(name)); // Add the player to the list.
+
+		}
+
+		/* Make a new pack, based on the type the user selected */
+		Pack newPack = new Pack(packType);
+
+		/* Shuffle the pack */
+		newPack.shuffle();
+
+		/* Deal the dominos to each player in the game */
+		for(Player player: playerList){
+			newPack.dealHand(player, 7); // deals 7 dominos into the player's hand.
+			iFace.handDealt(player); // tells the player their hand was dealt.
+		}
+
+		firtsHand();
+		do {
+			if(turn!=1) {
+				if(playerList.get(turn).hasPlay(newBoard.getBotSide()) || playerList.get(turn).hasPlay(newBoard.getTopSide())) {
+					gamePlay(turn);
+				} else {
+					addDomino(playerList.get(turn),newPack);
+					System.out.println("co cua: " + playerList.get(turn).getName() + playerList.get(turn).hand);
+					gamePlay(turn);
+				}
+			} else {
+				System.out.println("turn" + turn);
+				if(playerList.get(turn).hasPlay(newBoard.getBotSide()) || playerList.get(turn).hasPlay(newBoard.getTopSide())) {
+					playerTurn(1);
+				} else {
+					addDomino(playerList.get(turn), newPack);
+					System.out.println("co cua: " + playerList.get(turn).getName() + playerList.get(turn).hand);
+					playerTurn(1);
+				}
+			}
+
+			if(turn==playerList.size()-1) {
+				turn=0;
+			} else {
+				turn++;
+			}
+			System.out.println(newBoard.getDominos());
+//		} while (checkNumofDomino() && newPack.packSize()>0);
+	} while ((checkHasPlayGame() || newPack.packSize()>0) && checkNumofDomino() );
+
+
 	}
 
 	public void firtsHand() {
@@ -158,6 +181,44 @@ public class Game
 				}
 				i++;
 			}
+		}
+	}
+
+	public void playerTurn(int turnPlayer) {
+		System.out.println("co cua ban: "+playerList.get(turnPlayer).hand);
+		Domino domino = new Domino();
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Nhap -1 de bo luot: ");
+		int choose = sc.nextInt();
+		if(choose!=-1) {
+			System.out.println("Chon quan so: ");
+			int side = sc.nextInt()-1;
+			System.out.println("left = 0 or right = 1: ");
+			int vec = sc.nextInt();
+			boolean index = playerList.get(turnPlayer).checkDomino(side);
+			if(index) {
+				domino = playerList.get(turnPlayer).hand.get(side);
+				if(domino.getSide1()==newBoard.getBotSide() && vec ==1) {
+					newBoard.addDominoBot(domino,true);
+					playerList.get(turnPlayer).removeDom(side);
+				}
+				else if(domino.getSide1()==newBoard.getTopSide()) {
+					newBoard.addDominoTop(domino,true);
+					playerList.get(turnPlayer).removeDom(side);
+				}
+				else if(domino.getSide2()==newBoard.getBotSide() && vec ==1) {
+					newBoard.addDominoBot(domino,false);
+					playerList.get(turnPlayer).removeDom(side);
+				}
+				else if(domino.getSide2()==newBoard.getTopSide()) {
+					newBoard.addDominoTop(domino,false);
+					playerList.get(turnPlayer).removeDom(side);
+				} else {
+					gamePlay(turnPlayer);
+				}
+			}
+		} else {
+			gamePlay(turn);
 		}
 	}
 
@@ -208,5 +269,13 @@ public class Game
 			}
 		}
 		return check;
+	}
+
+	public void addDomino(Player player, Pack newPack) {
+		do {
+			if(newPack.packSize()>0 ){
+				newPack.dealHand(player,1);
+			}
+		} while (!player.hasPlay(newBoard.getTopSide()) && !player.hasPlay(newBoard.getBotSide()));
 	}
 }

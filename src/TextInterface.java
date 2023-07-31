@@ -20,8 +20,8 @@ public class TextInterface implements IDomInterface {
 	@Override
 	public int packSize() {
 		/*What domino pack should be created? 6 or 9?*/
-		System.out.println("Which pack would you like? \"6\" or \"9\"?");
-		return input.nextInt();
+//		System.out.println("Which pack would you like? \"6\" or \"9\"?");
+		return 6;
 	}
 
 	@Override
